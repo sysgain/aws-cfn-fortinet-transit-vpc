@@ -1,186 +1,310 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
-  "Parameters" : {
-      "FortiGateKeyName" : {
-      "Type" : "AWS::EC2::KeyPair::KeyName",
-      "Description" : "Name of and existing EC2 KeyPair to enable SSH access to the instance"
+  "Parameters": {
+    "FortiGateKeyName": {
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "Description": "Name of and existing EC2 KeyPair to enable SSH access to the instance"
     },
-      "FortiGateInstanceType" : {
-			"Type" : "String",
-			"Default" : "m3.medium",
-			"AllowedValues" : ["m3.medium", "m3.large", "m3.xlarge","m3.2xlarge", "c4.large", "c4.xlarge", "c4.2xlarge", "c4.4xlarge", "c4.8xlarge", "c3.large", "c3.xlarge", "c3.2xlarge", "c3.4xlarge", "c3.8xlarge"],
-			"Description" : "Enter the instance type of FortiGates",
-      "ConstraintDescription" : "must be a valid EC2 instance type."
-		},
-    "LicenseType" : {
-      "Description" : "Select the License Type for your Fortinet Gateway Instance, between BYOL and Pay As You Go AMI's: - (FGPayAMI - Pay As You Go & FGBYOLAMI - BYOL )",
-      "Type" : "String",
-      "Default" : "FGPayAMI",
-      "AllowedValues" : ["FGPayAMI", "FGBYOLAMI"]
+    "FortiGateInstanceType": {
+      "Type": "String",
+      "Default": "m3.medium",
+      "AllowedValues": [
+        "m3.medium",
+        "m3.large",
+        "m3.xlarge",
+        "m3.2xlarge",
+        "c4.large",
+        "c4.xlarge",
+        "c4.2xlarge",
+        "c4.4xlarge",
+        "c4.8xlarge",
+        "c3.large",
+        "c3.xlarge",
+        "c3.2xlarge",
+        "c3.4xlarge",
+        "c3.8xlarge"
+      ],
+      "Description": "Enter the instance type of FortiGates",
+      "ConstraintDescription": "must be a valid EC2 instance type."
     },
-    "TagCreated" : {
-      "Description" : "Date of the deployment being created",
-      "Type" : "String"
+    "LicenseType": {
+      "Description": "Select the License Type for your Fortinet Gateway Instance, between BYOL and Pay As You Go AMI's: - (FGPayAMI - Pay As You Go & FGBYOLAMI - BYOL )",
+      "Type": "String",
+      "Default": "FGPayAMI",
+      "AllowedValues": [
+        "FGPayAMI",
+        "FGBYOLAMI"
+      ]
     },
-    "VpcCidrIp" : {
-      "Description" : "Enter the CIDR for Transit VPC",
-      "Type" : "String",
-      "Default" :  "10.80.0.0/19"
+    "TagCreated": {
+      "Description": "Date of the deployment being created",
+      "Type": "String"
     },
-    "PublicSubnet1CIDR"  : {
-			"Description" : "Enter CIDR for Transit Public Subnet1 Block",
-			"Type"        : "String",
-			"Default"     : "10.80.1.0/25",
-			"AllowedPattern" : "[a-zA-Z0-9]+\\..+"
-		},
-    "PublicSubnet2CIDR"  : {
-			"Description" : "Enter CIDR for Transit Public Subnet2 Block",
-			"Type"        : "String",
-			"Default"     : "10.80.2.0/25",
-			"AllowedPattern" : "[a-zA-Z0-9]+\\..+"
-		},
-    "TagPrimaryOwner" : {
-      "Description" : "Owner of the Product",
-      "Type" : "String",
-	  "Default" : "nvtuluva@sysgain.com"
+    "VpcCidrIp": {
+      "Description": "Enter the CIDR for Transit VPC",
+      "Type": "String",
+      "Default": "10.80.0.0/19"
     },
-    "TagStack" : {
-      "Description" : "Enter the name of the Stack",
-      "Type" : "String",
-	  "Default" : "Production"
+    "PublicSubnet1CIDR": {
+      "Description": "Enter CIDR for Transit Public Subnet1 Block",
+      "Type": "String",
+      "Default": "10.80.1.0/25",
+      "AllowedPattern": "[a-zA-Z0-9]+\\..+"
     },
-    "SpokeTag" : {
-      "Description" : "Tag to use to identify spoke VGWs to connect to Transit VPC.",
-      "Type" : "String",
-      "Default" : "transitvpc:spoke"
+    "PublicSubnet2CIDR": {
+      "Description": "Enter CIDR for Transit Public Subnet2 Block",
+      "Type": "String",
+      "Default": "10.80.2.0/25",
+      "AllowedPattern": "[a-zA-Z0-9]+\\..+"
     },
-    "SpokeTagValue" : {
-      "Description" : "Tag value to use to identify spoke VGWs to connect to Transit VPC.",
-      "Type" : "String",
-      "Default" : "true"
+    "TagPrimaryOwner": {
+      "Description": "Owner of the Product",
+      "Type": "String",
+      "Default": "nvtuluva@sysgain.com"
     },
-    "S3Prefix" : {
-      "Description" : "S3 prefix to append before S3 key names.",
-      "Type" : "String",
-      "Default" : "vpnconfigrations/"
+    "TagStack": {
+      "Description": "Enter the name of the Stack",
+      "Type": "String",
+      "Default": "Production"
+    },
+    "SpokeTag": {
+      "Description": "Tag to use to identify spoke VGWs to connect to Transit VPC.",
+      "Type": "String",
+      "Default": "transitvpc:spoke"
+    },
+    "SpokeTagValue": {
+      "Description": "Tag value to use to identify spoke VGWs to connect to Transit VPC.",
+      "Type": "String",
+      "Default": "true"
+    },
+    "S3Prefix": {
+      "Description": "S3 prefix to append before S3 key names.",
+      "Type": "String",
+      "Default": "vpnconfigrations/"
     }
   },
-    "Mappings" : {
-      "FortiRegionMap" : {
-   				"us-east-1"      : { "FGPayAMI" : "ami-97f7d480", "FGBYOLAMI" : "ami-f2f0d3e5"},
-   				"us-east-2"      : { "FGPayAMI" : "ami-904b11f5", "FGBYOLAMI" : ""},
-    			"eu-west-1"      : { "FGPayAMI" : "ami-90c592e3", "FGBYOLAMI" : "ami-113b9b71"},
-    			"eu-west-2"      : { "FGPayAMI" : "ami-462d2722", "FGBYOLAMI" : "ami-1ac79069"},
-    			"eu-central-1"   : { "FGPayAMI" : "ami-7ea45e11", "FGBYOLAMI" : "ami-22a75d4d"},
-    			"ap-northeast-1" : { "FGPayAMI" : "ami-a2b917c3", "FGBYOLAMI" : "ami-eebb158f"},
-    			"ap-northeast-2" : { "FGPayAMI" : "ami-a84296c6", "FGBYOLAMI" : "ami-c74c98a9"}, 
-    			"ap-southeast-1" : { "FGPayAMI" : "ami-24359547", "FGBYOLAMI" : "ami-67359504"}, 
-    			"ap-southeast-2" : { "FGPayAMI" : "ami-f969569a", "FGBYOLAMI" : "ami-686b540b"},
-    			"ap-south-1"     : { "FGPayAMI" : "ami-6c9aee03", "FGBYOLAMI" : "ami-dd9befb2"},
-    			"sa-east-1"		   : { "FGPayAMI" : "ami-15f56a79", "FGBYOLAMI" : "ami-f0f8679c"}, 
-    			"us-west-1"      : { "FGPayAMI" : "ami-76e8a216", "FGBYOLAMI" : "ami-3be8a25b" }, 
-    			"us-west-2"      : { "FGPayAMI" : "ami-933797f3", "FGBYOLAMI" : "ami-e62f2582"},
-    			"ca-central-1"   : { "FGPayAMI" : "ami-e5823081", "FGBYOLAMI" : "ami-698a380d"}
-  				}
-    },
+  "Mappings": {
+    "FortiRegionMap": {
+      "us-east-1": {
+        "FGPayAMI": "ami-97f7d480",
+        "FGBYOLAMI": "ami-f2f0d3e5"
+      },
+      "us-east-2": {
+        "FGPayAMI": "ami-904b11f5",
+        "FGBYOLAMI": ""
+      },
+      "eu-west-1": {
+        "FGPayAMI": "ami-90c592e3",
+        "FGBYOLAMI": "ami-113b9b71"
+      },
+      "eu-west-2": {
+        "FGPayAMI": "ami-462d2722",
+        "FGBYOLAMI": "ami-1ac79069"
+      },
+      "eu-central-1": {
+        "FGPayAMI": "ami-7ea45e11",
+        "FGBYOLAMI": "ami-22a75d4d"
+      },
+      "ap-northeast-1": {
+        "FGPayAMI": "ami-a2b917c3",
+        "FGBYOLAMI": "ami-eebb158f"
+      },
+      "ap-northeast-2": {
+        "FGPayAMI": "ami-a84296c6",
+        "FGBYOLAMI": "ami-c74c98a9"
+      },
+      "ap-southeast-1": {
+        "FGPayAMI": "ami-24359547",
+        "FGBYOLAMI": "ami-67359504"
+      },
+      "ap-southeast-2": {
+        "FGPayAMI": "ami-f969569a",
+        "FGBYOLAMI": "ami-686b540b"
+      },
+      "ap-south-1": {
+        "FGPayAMI": "ami-6c9aee03",
+        "FGBYOLAMI": "ami-dd9befb2"
+      },
+      "sa-east-1": {
+        "FGPayAMI": "ami-15f56a79",
+        "FGBYOLAMI": "ami-f0f8679c"
+      },
+      "us-west-1": {
+        "FGPayAMI": "ami-76e8a216",
+        "FGBYOLAMI": "ami-3be8a25b"
+      },
+      "us-west-2": {
+        "FGPayAMI": "ami-933797f3",
+        "FGBYOLAMI": "ami-e62f2582"
+      },
+      "ca-central-1": {
+        "FGPayAMI": "ami-e5823081",
+        "FGBYOLAMI": "ami-698a380d"
+      }
+    }
+  },
   "Resources": {
     "VPC": {
       "Type": "AWS::EC2::VPC",
-	    "DeletionPolicy" : "Retain",
+      "DeletionPolicy": "Retain",
       "Properties": {
-        "CidrBlock": { "Ref" : "VpcCidrIp" },
+        "CidrBlock": {
+          "Ref": "VpcCidrIp"
+        },
         "InstanceTenancy": "default",
         "EnableDnsSupport": "true",
         "EnableDnsHostnames": "true",
         "Tags": [
           {
             "Key": "Stack",
-            "Value": { "Ref" : "TagStack" }
+            "Value": {
+              "Ref": "TagStack"
+            }
           },
           {
             "Key": "Name",
-            "Value": { "Fn::Join" : ["", ["VPC-",  {"Ref" : "TagStack" }]]}
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  "VPC-",
+                  {
+                    "Ref": "TagStack"
+                  }
+                ]
+              ]
+            }
           },
           {
             "Key": "Owner",
-            "Value": { "Ref" : "TagPrimaryOwner" }
+            "Value": {
+              "Ref": "TagPrimaryOwner"
+            }
           },
           {
             "Key": "Created",
-            "Value": { "Ref" : "TagCreated" }
+            "Value": {
+              "Ref": "TagCreated"
+            }
           }
         ]
       }
     },
-"PublicSubnetFrontEnd1a": {
+    "PublicSubnetFrontEnd1a": {
       "Type": "AWS::EC2::Subnet",
-	  "DeletionPolicy" : "Retain",
+      "DeletionPolicy": "Retain",
       "Properties": {
-        "CidrBlock" : {
-					"Ref" : "PublicSubnet1CIDR"
-					},
-        "AvailabilityZone": { "Fn::Select" : [ "1", { "Fn::GetAZs" : "" } ]},
+        "CidrBlock": {
+          "Ref": "PublicSubnet1CIDR"
+        },
+        "AvailabilityZone": {
+          "Fn::Select": [
+            "1",
+            {
+              "Fn::GetAZs": ""
+            }
+          ]
+        },
         "VpcId": {
           "Ref": "VPC"
         },
         "Tags": [
           {
             "Key": "Stack",
-            "Value": { "Ref" : "TagStack" }
+            "Value": {
+              "Ref": "TagStack"
+            }
           },
           {
             "Key": "Name",
-            "Value": { "Fn::Join" : ["", [ { "Ref" : "TagStack" } , "_PublicSubnet_1a_FrontEnd"]]}
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "TagStack"
+                  },
+                  "_PublicSubnet_1a_FrontEnd"
+                ]
+              ]
+            }
           },
           {
             "Key": "Created",
-            "Value": { "Ref" : "TagCreated" }
+            "Value": {
+              "Ref": "TagCreated"
+            }
           },
           {
             "Key": "Owner",
-            "Value": { "Ref" : "TagPrimaryOwner" }
+            "Value": {
+              "Ref": "TagPrimaryOwner"
+            }
           }
         ]
       }
-},
-"PublicSubnetFrontEnd1b": {
-    "Type": "AWS::EC2::Subnet",
-	"DeletionPolicy" : "Retain",
-    "Properties": {
-    "CidrBlock" : {
-					"Ref" : "PublicSubnet2CIDR"
-					},
-        "AvailabilityZone": { "Fn::Select" : [ "0", { "Fn::GetAZs" : "" } ]},
+    },
+    "PublicSubnetFrontEnd1b": {
+      "Type": "AWS::EC2::Subnet",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "CidrBlock": {
+          "Ref": "PublicSubnet2CIDR"
+        },
+        "AvailabilityZone": {
+          "Fn::Select": [
+            "0",
+            {
+              "Fn::GetAZs": ""
+            }
+          ]
+        },
         "VpcId": {
           "Ref": "VPC"
         },
         "Tags": [
           {
             "Key": "Stack",
-            "Value": { "Ref" : "TagStack" }
+            "Value": {
+              "Ref": "TagStack"
+            }
           },
           {
             "Key": "Name",
-            "Value": { "Fn::Join" : ["", [ { "Ref" : "TagStack" } , "_PublicSubnet_1b_FrontEnd"]]}
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "TagStack"
+                  },
+                  "_PublicSubnet_1b_FrontEnd"
+                ]
+              ]
+            }
           },
           {
             "Key": "Created",
-            "Value": { "Ref" : "TagCreated" }
+            "Value": {
+              "Ref": "TagCreated"
+            }
           },
           {
             "Key": "Owner",
-            "Value": { "Ref" : "TagPrimaryOwner" }
+            "Value": {
+              "Ref": "TagPrimaryOwner"
+            }
           }
         ]
-    }
-},
+      }
+    },
     "InternetGateway": {
       "Type": "AWS::EC2::InternetGateway",
-      "DeletionPolicy" : "Retain"
+      "DeletionPolicy": "Retain"
     },
     "AttachGateway": {
       "Type": "AWS::EC2::VPCGatewayAttachment",
-	  "DeletionPolicy" : "Retain",
+      "DeletionPolicy": "Retain",
       "Properties": {
         "VpcId": {
           "Ref": "VPC"
@@ -192,34 +316,50 @@
     },
     "PublicRoute": {
       "Type": "AWS::EC2::RouteTable",
-	  "DeletionPolicy" : "Retain",
+      "DeletionPolicy": "Retain",
       "Properties": {
         "VpcId": {
           "Ref": "VPC"
         },
-       "Tags": [
+        "Tags": [
           {
             "Key": "Stack",
-            "Value": { "Ref" : "TagStack" }
+            "Value": {
+              "Ref": "TagStack"
+            }
           },
           {
             "Key": "Name",
-            "Value": { "Fn::Join" : ["", [ { "Ref" : "TagStack" } , "_PublicRouteTable"]]}
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "TagStack"
+                  },
+                  "_PublicRouteTable"
+                ]
+              ]
+            }
           },
           {
             "Key": "Created",
-            "Value": { "Ref" : "TagCreated" }
+            "Value": {
+              "Ref": "TagCreated"
+            }
           },
           {
             "Key": "Owner",
-            "Value": { "Ref" : "TagPrimaryOwner" }
+            "Value": {
+              "Ref": "TagPrimaryOwner"
+            }
           }
         ]
       }
     },
     "PublicSubnet1RouteTableAssociation": {
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
-	  "DeletionPolicy" : "Retain",
+      "DeletionPolicy": "Retain",
       "Properties": {
         "RouteTableId": {
           "Ref": "PublicRoute"
@@ -231,7 +371,7 @@
     },
     "PublicSubnet2RouteTableAssociation": {
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
-	  "DeletionPolicy" : "Retain",
+      "DeletionPolicy": "Retain",
       "Properties": {
         "RouteTableId": {
           "Ref": "PublicRoute"
@@ -243,7 +383,7 @@
     },
     "route1": {
       "Type": "AWS::EC2::Route",
-	  "DeletionPolicy" : "Retain",
+      "DeletionPolicy": "Retain",
       "Properties": {
         "DestinationCidrBlock": "0.0.0.0/0",
         "RouteTableId": {
@@ -254,21 +394,44 @@
         }
       }
     },
-    "S3Endpoint" : {
-      "Type" : "AWS::EC2::VPCEndpoint",
-      "Properties" : {
-        "PolicyDocument" : {
-          "Version":"2012-10-17",
-          "Statement":[{
-            "Effect":"Allow",
-            "Principal": "*",
-            "Action":["s3:*"],
-            "Resource":["*"]
-          }]
+    "S3Endpoint": {
+      "Type": "AWS::EC2::VPCEndpoint",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": [
+                "s3:*"
+              ],
+              "Resource": [
+                "*"
+              ]
+            }
+          ]
         },
-        "RouteTableIds" : [ {"Ref" : "PublicRoute"} ],
-        "ServiceName" : { "Fn::Join": [ "", [ "com.amazonaws.", { "Ref": "AWS::Region" }, ".s3" ] ] },
-        "VpcId" : {"Ref" : "VPC"}
+        "RouteTableIds": [
+          {
+            "Ref": "PublicRoute"
+          }
+        ],
+        "ServiceName": {
+          "Fn::Join": [
+            "",
+            [
+              "com.amazonaws.",
+              {
+                "Ref": "AWS::Region"
+              },
+              ".s3"
+            ]
+          ]
+        },
+        "VpcId": {
+          "Ref": "VPC"
+        }
       }
     },
     "sgFortiGateSG": {
@@ -370,45 +533,79 @@
         ]
       }
     },
-    "FORTIGateEip1" : {
-      "Type" : "AWS::EC2::EIP",
-      "Properties" : {
-        "Domain" : "vpc",
-        "InstanceId" : { "Ref" : "FortiGate1a" }
+    "FORTIGateEip1": {
+      "Type": "AWS::EC2::EIP",
+      "Properties": {
+        "Domain": "vpc",
+        "InstanceId": {
+          "Ref": "FortiGate1a"
+        }
       }
     },
-    "FORTIGateEip2" : {
-      "Type" : "AWS::EC2::EIP",
-      "Properties" : {
-        "Domain" : "vpc",
-        "InstanceId" : { "Ref" : "FortiGate1b"}
+    "FORTIGateEip2": {
+      "Type": "AWS::EC2::EIP",
+      "Properties": {
+        "Domain": "vpc",
+        "InstanceId": {
+          "Ref": "FortiGate1b"
+        }
       }
     },
-   "FortiGate1a": {
+    "FortiGate1a": {
       "Type": "AWS::EC2::Instance",
       "Properties": {
         "DisableApiTermination": "FALSE",
-        "ImageId" : { "Fn::FindInMap" : [ "FortiRegionMap", { "Ref" : "AWS::Region" }, { "Ref": "LicenseType" }] },
-        "InstanceType" : { "Ref" : "FortiGateInstanceType" },
-        "KeyName" : {"Ref" : "FortiGateKeyName"},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "FortiRegionMap",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Ref": "LicenseType"
+            }
+          ]
+        },
+        "InstanceType": {
+          "Ref": "FortiGateInstanceType"
+        },
+        "KeyName": {
+          "Ref": "FortiGateKeyName"
+        },
         "Monitoring": "false",
-		    "SourceDestCheck"  : "false",
+        "SourceDestCheck": "false",
         "Tags": [
           {
             "Key": "Name",
-            "Value": { "Fn::Join" : ["", [ { "Ref" : "TagStack" } , "_Fortigate_01"]]}
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "TagStack"
+                  },
+                  "_Fortigate_01"
+                ]
+              ]
+            }
           },
           {
             "Key": "Owner",
-            "Value": { "Ref" : "TagPrimaryOwner" }
+            "Value": {
+              "Ref": "TagPrimaryOwner"
+            }
           },
           {
             "Key": "Stack",
-            "Value": { "Ref" : "TagStack" }
+            "Value": {
+              "Ref": "TagStack"
+            }
           },
           {
             "Key": "Created",
-            "Value": { "Ref" : "TagCreated" }
+            "Value": {
+              "Ref": "TagCreated"
+            }
           }
         ],
         "NetworkInterfaces": [
@@ -432,27 +629,57 @@
       "Type": "AWS::EC2::Instance",
       "Properties": {
         "DisableApiTermination": "FALSE",
-        "ImageId" : { "Fn::FindInMap" : [ "FortiRegionMap", { "Ref" : "AWS::Region" }, { "Ref": "LicenseType" }] },
-        "InstanceType" : { "Ref" : "FortiGateInstanceType" },
-        "KeyName" : {"Ref" : "FortiGateKeyName"},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "FortiRegionMap",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Ref": "LicenseType"
+            }
+          ]
+        },
+        "InstanceType": {
+          "Ref": "FortiGateInstanceType"
+        },
+        "KeyName": {
+          "Ref": "FortiGateKeyName"
+        },
         "Monitoring": "false",
-		    "SourceDestCheck"  : "false",
+        "SourceDestCheck": "false",
         "Tags": [
           {
             "Key": "Name",
-            "Value": { "Fn::Join" : ["", [ { "Ref" : "TagStack" } , "_Fortigate_02"]]}
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "TagStack"
+                  },
+                  "_Fortigate_02"
+                ]
+              ]
+            }
           },
           {
             "Key": "Owner",
-            "Value": { "Ref" : "TagPrimaryOwner" }
+            "Value": {
+              "Ref": "TagPrimaryOwner"
+            }
           },
           {
             "Key": "Stack",
-            "Value": { "Ref" : "TagStack" }
+            "Value": {
+              "Ref": "TagStack"
+            }
           },
           {
             "Key": "Created",
-            "Value": { "Ref" : "TagCreated" }
+            "Value": {
+              "Ref": "TagCreated"
+            }
           }
         ],
         "NetworkInterfaces": [
@@ -472,79 +699,124 @@
         ]
       }
     },
-    "S3Bucket" : {
-      "Type" : "AWS::S3::Bucket"
+    "S3Bucket": {
+      "Type": "AWS::S3::Bucket"
     },
-    "S3BucketPolicy" : {
-      "Type" : "AWS::S3::BucketPolicy",
-      "Properties" : {
-        "Bucket" : {"Ref" : "S3Bucket" },
+    "S3BucketPolicy": {
+      "Type": "AWS::S3::BucketPolicy",
+      "Properties": {
+        "Bucket": {
+          "Ref": "S3Bucket"
+        },
         "PolicyDocument": {
-          "Statement":[ {
-      "Sid": "DenyUnEncryptedObjectUploads",
-      "Action": [
-        "s3:PutObject"
-      ],
-      "Effect": "Deny",
-      "Resource": { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "S3Bucket" },"/",{ "Ref" : "S3Prefix" }, "*" ]]},
-      "Condition": {
-        "StringNotEquals": {
-          "s3:x-amz-server-side-encryption": "aws:kms"
-        }
-      },
-      "Principal": "*"
-    },
-    {
-	    "Action":["s3:GetObject", "s3:PutObject", "s3:PutObjectAcl"],
-	    "Effect":"Allow",
-	    "Resource": { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "S3Bucket" },"/",{ "Ref" : "S3Prefix" }, "*" ]]},
-	    "Principal": "*"
-	  }
-  ]
+          "Statement": [
+            {
+              "Sid": "DenyUnEncryptedObjectUploads",
+              "Action": [
+                "s3:PutObject"
+              ],
+              "Effect": "Deny",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:s3:::",
+                    {
+                      "Ref": "S3Bucket"
+                    },
+                    "/",
+                    {
+                      "Ref": "S3Prefix"
+                    },
+                    "*"
+                  ]
+                ]
+              },
+              "Condition": {
+                "StringNotEquals": {
+                  "s3:x-amz-server-side-encryption": "aws:kms"
+                }
+              },
+              "Principal": "*"
+            },
+            {
+              "Action": [
+                "s3:GetObject",
+                "s3:PutObject",
+                "s3:PutObjectAcl"
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:s3:::",
+                    {
+                      "Ref": "S3Bucket"
+                    },
+                    "/",
+                    {
+                      "Ref": "S3Prefix"
+                    },
+                    "*"
+                  ]
+                ]
+              },
+              "Principal": "*"
+            }
+          ]
         }
       }
     }
-},
-"Outputs" : {
-    "UsernameforFortiGate1" : {
-			"Value" : "admin",
-			"Description" : "Username to Access Fortigate"
-		},
-    "PasswordforFortiGate1" : {
-			"Value" : { "Ref" : "FortiGate1a"},
-			"Description" : "Password to login to Fortigate is the instance id"
-		},
-        "Fortigate1ConsoleAccess" : {
-			"Value" : {
-				"Fn::Join" : [
-					"",
-					[
-						"https://", {
-							"Ref" : "FORTIGateEip1"
-						}
-					]
-				]
-			},
-			"Description" : "Connection to Fortigate1"
-		},
-    "UsernameforFortiGate2" : {
-			"Value" : "admin",
-			"Description" : "Username to Access Fortigate"
-		},
-    "PasswordforFortiGate2" : {
-			"Value" : { "Ref" : "FortiGate1b"},
-			"Description" : "Password to login to Fortigate is the instance id"
-		},
-        "Fortigate2ConsoleAccess" : {
-			"Value" : {
-				"Fn::Join" : [
-					"",
-					[
-						"https://", { "Ref" : "FORTIGateEip2" }
-					]
-				]
-			},
-			"Description" : "Connection to Fortigate2 Instance"
-		}
-}
+  },
+  "Outputs": {
+    "UsernameforFortiGate1": {
+      "Value": "admin",
+      "Description": "Username to Access Fortigate"
+    },
+    "PasswordforFortiGate1": {
+      "Value": {
+        "Ref": "FortiGate1a"
+      },
+      "Description": "Password to login to Fortigate is the instance id"
+    },
+    "Fortigate1ConsoleAccess": {
+      "Value": {
+        "Fn::Join": [
+          "",
+          [
+            "https://",
+            {
+              "Ref": "FORTIGateEip1"
+            }
+          ]
+        ]
+      },
+      "Description": "Connection to Fortigate1"
+    },
+    "UsernameforFortiGate2": {
+      "Value": "admin",
+      "Description": "Username to Access Fortigate"
+    },
+    "PasswordforFortiGate2": {
+      "Value": {
+        "Ref": "FortiGate1b"
+      },
+      "Description": "Password to login to Fortigate is the instance id"
+    },
+    "Fortigate2ConsoleAccess": {
+      "Value": {
+        "Fn::Join": [
+          "",
+          [
+            "https://",
+            {
+              "Ref": "FORTIGateEip2"
+            }
+          ]
+        ]
+      },
+      "Description": "Connection to Fortigate2 Instance"
+    }
+  }
 }

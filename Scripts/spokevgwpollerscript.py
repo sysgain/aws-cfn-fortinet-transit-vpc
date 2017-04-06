@@ -84,7 +84,7 @@ def lambda_handler(event, context):
         cg1=nr.create_customer_gateway(Type='ipsec.1',PublicIp=FortinetEIP1,BgpAsn=int(BGP))
         nr.create_tags(Resources=[cg1['CustomerGateway']['CustomerGatewayId']],Tags=[{'Key': 'Name','Value': 'Transit VPC Endpoint1' }])
         cg2=nr.create_customer_gateway(Type='ipsec.1',PublicIp=FortinetEIP2,BgpAsn=int(BGP))
-        nr.create_tags(Resources=[cg1['CustomerGateway']['CustomerGatewayId']],Tags=[{'Key': 'Name','Value': 'Transit VPC Endpoint1' }])
+        nr.create_tags(Resources=[cg2['CustomerGateway']['CustomerGatewayId']],Tags=[{'Key': 'Name','Value': 'Transit VPC Endpoint2' }])
         vpn1=nr.create_vpn_connection(Type='ipsec.1',CustomerGatewayId=cg1['CustomerGateway']['CustomerGatewayId'],VpnGatewayId=n[1],Options={'StaticRoutesOnly':False})
         nr.create_tags(Resources=[vpn1['VpnConnection']['VpnConnectionId']],Tags=[{'Key': NameTag,'Value': NameValue }])
         vpn_config1=nr.describe_vpn_connections(VpnConnectionIds=[vpn1['VpnConnection']['VpnConnectionId']])
@@ -99,7 +99,7 @@ def lambda_handler(event, context):
               #SSEKMSKeyId=config['KMS_KEY']
               )
         vpn2=nr.create_vpn_connection(Type='ipsec.1',CustomerGatewayId=cg2['CustomerGateway']['CustomerGatewayId'],VpnGatewayId=n[1],Options={'StaticRoutesOnly':False})
-        nr.create_tags(Resources=[vpn1['VpnConnection']['VpnConnectionId']],Tags=[{'Key': NameTag,'Value': NameValue }])
+        nr.create_tags(Resources=[vpn2['VpnConnection']['VpnConnectionId']],Tags=[{'Key': NameTag,'Value': NameValue }])
         vpn_config2=nr.describe_vpn_connections(VpnConnectionIds=[vpn2['VpnConnection']['VpnConnectionId']])
         vpn_config2=vpn_config2['VpnConnections'][0]['CustomerGatewayConfiguration']
         s3_client = boto3.client('s3')

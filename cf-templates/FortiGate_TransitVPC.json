@@ -935,6 +935,12 @@
             "S3Bucket": "fortinetlambda",
             "S3Key": "worker_function.zip"
         },
+	    "Environment": 
+        {
+            "Variables": {
+            "S3Bucket": {"Ref": "S3Bucket"}
+	    }
+	},
         "Role": { "Fn::GetAtt" : [ "WorkerConfigRole", "Arn" ] },
         "Timeout": 180,
         "Handler": "worker_function.worker_handler",

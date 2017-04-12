@@ -1,1 +1,1 @@
-This directory consists in the python complied code, used for automation.
+This directory consists of the python complied code, used for automation.

@@ -110,7 +110,7 @@
     "Conditions" : {
     "AuthorizeAnotherAccount" : {"Fn::Not" : [
 	{"Fn::Equals" : [
-		{"Ref": "AccountId"}, 
+		{"Ref": "SpokeAWSAccountId"}, 
 		""
 	    ]}
 	]}
@@ -761,7 +761,7 @@
                 ]
               },
              "Principal": {
-		        "AWS" : [{ "Fn::Join" : ["", ["arn:aws:iam::",{"Fn::If": ["AuthorizeAnotherAccount", {"Ref" : "AccountId" }, { "Ref" : "AWS::AccountId" } ]}, ":root" ]]}]
+		        "AWS" : [{ "Fn::Join" : ["", ["arn:aws:iam::",{"Fn::If": ["AuthorizeAnotherAccount", {"Ref" : "SpokeAWSAccountId" }, { "Ref" : "AWS::AccountId" } ]}, ":root" ]]}]
 	         }
             },
             {

@@ -88,7 +88,7 @@
     "Properties": {
         "Code": {
             "S3Bucket": "fortinetlambda",
-            "S3Key": "spokevgwpollerscriptv2.zip"
+            "S3Key": "spokevgw_functionv2.zip"
         },
         "Environment": 
         {
@@ -98,7 +98,7 @@
         },
         "Role": { "Fn::GetAtt" : [ "VgwPollerRole", "Arn" ] },
         "Timeout": 60,
-        "Handler": "lambda_function.lambda_handler",
+        "Handler": "spokevgw_function.spokevgw_handler",
         "Runtime": "python2.7",
         "MemorySize": 128
     }

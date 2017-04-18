@@ -101,7 +101,7 @@
     "MaxLength" : "41",
     "AllowedPattern" : "[a-zA-Z0-9]*"
     },
-    "Spoke AWS AccountId" : {
+    "SpokeAWSAccountId" : {
       "Description" : "Another Spoke AWS Account ID to authorize access to Transit S3 Bucket (Used to store VPN Config & KMS Key).",
       "Type" : "String",
       "Default" : ""

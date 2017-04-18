@@ -88,7 +88,7 @@
     "Properties": {
         "Code": {
             "S3Bucket": "fortinetlambda",
-            "S3Key": "spokevgwpollerscript.zip"
+            "S3Key": "spokevgwpollerscriptv2.zip"
         },
         "Environment": 
         {

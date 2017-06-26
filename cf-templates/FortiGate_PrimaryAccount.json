@@ -1,14 +1,16 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
   "Description" : "Transit VPC: This template creates a dedicated transit VPC with FortiGate Instances . ***NOTE*** You must first subscribe to the appropriate FortiGate marketplace BYOL or Pay As You Go AMI from the AWS Marketplace before you launch this template. ",
+  
   "Parameters": {
     "FortiGateKeyName": {
       "Type": "AWS::EC2::KeyPair::KeyName",
       "Description": "Name of and existing EC2 KeyPair to enable SSH access to the instance"
     },
+    
     "FortiGateInstanceType": {
       "Type": "String",
-      "Default": "m3.medium",
+      "Default": "c4.xlarge",
       "AllowedValues": [
         "m3.medium",
         "m3.large",
@@ -28,6 +30,7 @@
       "Description": "Enter the instance type of FortiGates",
       "ConstraintDescription": "must be a valid EC2 instance type."
     },
+
     "LicenseType": {
       "Description": "Select the License Type for your Fortinet Gateway Instance, between BYOL and Pay As You Go AMI's: - (FortiGate OnDemand AMI - Pay As You Go & FortiGate BYOL AMI - BYOL )",
       "Type": "String",
@@ -37,62 +40,104 @@
         "BYOL"
       ]
     },
+
+    "SourceS3Bucket":{
+      "Description": " [Optional] - BYOL Enter the Source S3 Bucket name, where your license file and config files exists",
+      "Type": "String",
+      "Default": ""
+    },
+    
+    "SourceS3BucketRegion":{
+      "Description": "[Optional] - BYOL Enter the Source S3 Bucket Region",
+      "Type": "String",
+      "Default": ""
+    },
+    
+    "LicenseFile":{
+      "Description": "[Optional] - BYOL Enter the name of the license file",
+      "Type": "String",
+      "Default": ""
+    },
+    
+    "ConfigFile":{
+      "Description": "[Optional] - BYOL Enter the name of the config file",
+      "Type": "String",
+      "Default": ""
+    },
+    
+    "FortigateIAMRole":{
+      "Description": "[Optional] - BYOL Enter the name of IAM Role to be associated with Fortigate BYOL Instance",
+      "Type": "String",
+      "Default": "" 
+    },
+    
     "TagCreated": {
       "Description": "Date of the deployment being created",
       "Type": "String"
     },
+    
     "VpcCidrIp": {
       "Description": "Enter the CIDR range for Transit VPC",
       "Type": "String",
       "Default": "10.80.0.0/19"
     },
+    
     "PublicSubnet1CIDR": {
       "Description": "Enter the CIDR range  for Public Subnet1 Block",
       "Type": "String",
       "Default": "10.80.1.0/25",
       "AllowedPattern": "[a-zA-Z0-9]+\\..+"
     },
+    
     "PublicSubnet2CIDR": {
       "Description": "Enter the CIDR range for Public Subnet2 Block",
       "Type": "String",
       "Default": "10.80.2.0/25",
       "AllowedPattern": "[a-zA-Z0-9]+\\..+"
     },
+    
     "TagPrimaryOwner": {
       "Description": "Owner of the Product",
       "Type": "String",
       "Default": "nvtuluva@sysgain.com"
     },
+    
     "TagStack": {
       "Description": "Enter the name of the Stack",
       "Type": "String",
       "Default": "Production"
     },
+    
     "SpokeTag": {
       "Description": "Tag to use to identify spoke VGWs to connect to FortiGate Transit VPC.",
       "Type": "String",
       "Default": "transitvpc:spoke"
     },
+    
     "SpokeTagValue": {
       "Description": "Tag value to use to identify spoke VGWs to connect to FortiGate Transit VPC.",
       "Type": "String",
       "Default": "true"
     },
+    
     "S3Prefix": {
       "Description": "S3 prefix to append before VPN Configration files.",
       "Type": "String",
       "Default": "vpnconfigrations/"
     },
+    
     "BGP" : {
       "Description" : "BGP Value used for Transit VPC.",
       "Type" : "String",
       "Default" : "65008"
     },
+    
     "AutomateUser" : {
       "Description" : "User Account used for pushing config",
       "Type" : "String",
       "Default" : "fortiautomate"
     },
+    
     "AutomateUserPwd" : {
     "NoEcho" : "true",
     "Description" : "User Account password for pushing config",
@@ -101,20 +146,54 @@
     "MaxLength" : "41",
     "AllowedPattern" : "[a-zA-Z0-9]*"
     },
+    
     "SpokeAWSAccountId" : {
       "Description" : "Another Spoke AWS Account ID to authorize access to Transit S3 Bucket (Used to store VPN Config & KMS Key).",
       "Type" : "String",
       "Default" : ""
         }
     },
+    
     "Conditions" : {
     "AuthorizeAnotherAccount" : {"Fn::Not" : [
 	{"Fn::Equals" : [
 		{"Ref": "SpokeAWSAccountId"}, 
 		""
 	    ]}
+	]},
+  "CreateFortigateResource" : {"Fn::Not" : [
+	{"Fn::Equals" : [
+		{"Ref": "LicenseType"}, 
+		"BYOL"
+	    ]}
 	]}
 	},
+  "Metadata" : {
+  "AWS::CloudFormation::Interface" : {
+    "ParameterGroups" : [
+      {
+        "Label" : { "default" : "Network Configuration" },
+        "Parameters" : [ "VpcCidrIp", "PublicSubnet1CIDR", "PublicSubnet2CIDR", "SpokeTag", "SpokeTagValue", "BGP" ]
+      },
+      {
+        "Label" : { "default" : "License Configuration" },
+        "Parameters" : [ "LicenseType", "SourceS3Bucket", "SourceS3BucketRegion", "LicenseFile", "ConfigFile", "FortigateIAMRole" ]
+      },
+      {
+        "Label" : { "default" : "EC2 Configuration" },
+        "Parameters" : [ "FortiGateKeyName", "FortiGateInstanceType" ]
+      },
+      {
+        "Label" : { "default" : "Service Configuration" },
+        "Parameters" : [ "S3Prefix", "AutomateUser", "AutomateUserPwd", "SpokeAWSAccountId" ]
+      },
+      {
+        "Label" : { "default" : "Tag Configuration" },
+        "Parameters" : [ "TagStack", "TagPrimaryOwner", "TagCreated" ]
+      }
+    ]
+  }
+  },
   "Mappings": {
     "FortiRegionMap": {
       "us-east-1": {
@@ -172,6 +251,50 @@
       "ca-central-1": {
         "OnDemand": "ami-e5823081",
         "BYOL": "ami-698a380d"
+      }
+    },
+    "CodeRegionMap": {
+      "us-east-1": {
+        "LambdaCode": "forticodeuseast1"
+      },
+      "us-east-2": {
+        "LambdaCode": "forticodeuseast2"
+      },
+      "eu-west-1": {
+        "LambdaCode": "forticodeeuwest1"
+      },
+      "eu-west-2": {
+        "LambdaCode": "forticodeeuwest2"
+      },
+      "eu-central-1": {
+        "LambdaCode": "forticodeeucentral1"
+      },
+      "ap-northeast-1": {
+        "LambdaCode": "forticodeapnortheast1"
+      },
+      "ap-northeast-2": {
+        "LambdaCode": "forticodeapnortheast2"
+      },
+      "ap-southeast-1": {
+        "LambdaCode": "forticodeapsoutheast1"
+      },
+      "ap-southeast-2": {
+        "LambdaCode": "forticodeapsoutheast2"
+      },
+      "ap-south-1": {
+        "LambdaCode": "forticodeapsouth1"
+      },
+      "sa-east-1": {
+        "LambdaCode": "forticodesaeast1"
+      },
+      "us-west-1": {
+        "LambdaCode": "forticodeuswest1"
+      },
+      "us-west-2": {
+        "LambdaCode": "forticodeuswest2"
+      },
+      "ca-central-1": {
+        "LambdaCode": "forticacentral1"
       }
     }
   },
@@ -587,6 +710,7 @@
       "Type": "AWS::EC2::Instance",
       "Properties": {
         "DisableApiTermination": "FALSE",
+        "IamInstanceProfile": { "Ref": "FortigateIAMRole" },
         "ImageId": {
           "Fn::FindInMap": [
             "FortiRegionMap",
@@ -640,6 +764,18 @@
             }
           }
         ],
+        "UserData" : {
+          "Fn::Base64": { "Fn::Join" : ["", [
+            "{\n",
+            "\"bucket\"" , " : ", "\"", {"Ref" : "SourceS3Bucket"},"\"" , ",\n",
+            "\"region\"" , " : ", "\"", {"Ref" : "SourceS3BucketRegion"}, "\"" , ",\n",
+            "\"license\"" , " : ", "\"", "/", {"Ref" : "LicenseFile"}, "\"" ,  ",\n",
+            "\"config\"", " : ",  "\"", "/", {"Ref" : "ConfigFile"},   "\"" , ",\n",
+            "}"
+           ]
+          ]
+        }
+        },
         "NetworkInterfaces": [
           {
             "DeleteOnTermination": "true",
@@ -661,6 +797,7 @@
       "Type": "AWS::EC2::Instance",
       "Properties": {
         "DisableApiTermination": "FALSE",
+        "IamInstanceProfile": { "Ref": "FortigateIAMRole" },
         "ImageId": {
           "Fn::FindInMap": [
             "FortiRegionMap",
@@ -714,6 +851,18 @@
             }
           }
         ],
+        "UserData" : {
+          "Fn::Base64": { "Fn::Join" : ["", [
+            "{\n",
+            "\"bucket\"" , " : ", "\"", {"Ref" : "SourceS3Bucket"},"\"" , ",\n",
+            "\"region\"" , " : ", "\"", {"Ref" : "SourceS3BucketRegion"}, "\"" , ",\n",
+            "\"license\"" , " : ", "\"", "/", {"Ref" : "LicenseFile"}, "\"" ,  ",\n",
+            "\"config\"", " : ",  "\"", "/", {"Ref" : "ConfigFile"},   "\"" , ",\n",
+            "}"
+           ]
+          ]
+        }
+        },
         "NetworkInterfaces": [
           {
             "DeleteOnTermination": "true",
@@ -875,7 +1024,15 @@
     "Properties": {
         "Description": "Main Lambda Function is used to update s3 notification policy, craete Fortigate automate user, performs the VGW poller function ",
         "Code": {
-            "S3Bucket": "fortinetlambda",
+            "S3Bucket": {
+                      "Fn::FindInMap": [
+                                        "CodeRegionMap",
+                                        {
+                                          "Ref": "AWS::Region"
+                                        },
+                                          "LambdaCode"
+                                      ]
+                      },
             "S3Key": "main_functionv2.zip"
         },
         "Environment": 
@@ -994,7 +1151,15 @@
     "Properties": {
         "Description": "Worker Config Lambda Function is used to check for new VPN Configuartion files and update config on to Fortigate EC2 instances ",
         "Code": {
-            "S3Bucket": "fortinetlambda",
+            "S3Bucket": {
+                      "Fn::FindInMap": [
+                                        "CodeRegionMap",
+                                        {
+                                          "Ref": "AWS::Region"
+                                        },
+                                        "LambdaCode"
+                                      ]
+                      },
             "S3Key": "worker_function.zip"
         },
         "Environment": 
